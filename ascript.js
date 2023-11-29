@@ -10,10 +10,11 @@ const TG = {
         position: null,
         color: null,
     },
-    camera: {
-        position: [0, 0, 5],
-        lookAt: [0, 0, 0],
+
+    creatNew: function () {
+        return Object.create(this);
     },
+
     init: function (canvasId) {
         const canvas = document.getElementById(canvasId);
         this.gl = canvas.getContext('webgl');
@@ -23,6 +24,10 @@ const TG = {
             return;
         }
 
+        this.initShaders();
+        this.initBuffers();
+    },
+    initShaders: function () {
         // 顶点着色器代码
         this.vertexShaderSource = `
         attribute vec3 aPosition;
@@ -36,7 +41,6 @@ const TG = {
             vColor = aColor;
         }
         `;
-
         // 片段着色器代码
         this.fragmentShaderSource = `
         precision mediump float;
@@ -47,10 +51,6 @@ const TG = {
         }
         `;
 
-        this.initShaders();
-        this.initBuffers();
-    },
-    initShaders: function () {
         // 创建顶点着色器
         const vertexShader = this.createShader(this.gl.VERTEX_SHADER, this.vertexShaderSource);
         // 创建片段着色器
@@ -132,7 +132,7 @@ const TG = {
         this.gl.bufferData(target, data, this.gl.STATIC_DRAW);
         return buffer;
     },
-    
+
     /** 画直线 */
     drawLine: function (startPoint, endPoint, color) {
         // 更新顶点坐标数据和颜色数据
@@ -159,21 +159,8 @@ const TG = {
 
     },
 
-    setCamera: function (position, lookAt) {
-        this.camera.position = position;
-        this.camera.lookAt = lookAt;
-    },
-    // 更新相机参数的函数
-    updateCamera: function () {
-        const modelViewMatrix = mat4.create();
-        mat4.lookAt(modelViewMatrix, this.camera.position, this.camera.lookAt, [0, 1, 0]);
-
-        const projectionMatrix = mat4.create();
-        mat4.perspective(projectionMatrix, 45 * Math.PI / 180, this.gl.canvas.width / this.gl.canvas.height, 0.1, 100);
-
-        // 传递相机参数到着色器程序中的 uniform 变量
-        this.gl.uniformMatrix4fv(this.shaderProgram.uModelViewMatrixLocation, false, modelViewMatrix);
-        this.gl.uniformMatrix4fv(this.shaderProgram.uProjectionMatrixLocation, false, projectionMatrix);
+    /** 设置相机参数，需自定义 */
+    setCamera: function (tg) {
     },
 
     /** 清空画布，更新参数 */
@@ -183,17 +170,35 @@ const TG = {
         this.gl.clearColor(0, 0, 0, 1);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 
-        // 更新相机参数
-        this.updateCamera();
+        this.setCamera(this.gl, this.shaderProgram);
     },
 };
 
+
+function aSetCamera(gl, shaderProgram) {
+    var camera = {
+        position: [0.2, 0.2, 1.5],
+        lookAt: [0, 0, 0],
+    };
+    const modelViewMatrix = mat4.create();
+    mat4.lookAt(modelViewMatrix, camera.position, camera.lookAt, [0, 1, 0]);
+
+    const projectionMatrix = mat4.create();
+    mat4.perspective(projectionMatrix, 90 * Math.PI / 180, gl.canvas.width / gl.canvas.height, 0.1, 100);
+
+    // 传递相机参数到着色器程序中的 uniform 变量
+    gl.uniformMatrix4fv(shaderProgram.uModelViewMatrixLocation, false, modelViewMatrix);
+    gl.uniformMatrix4fv(shaderProgram.uProjectionMatrixLocation, false, projectionMatrix);
+};
+
+
 // 页面加载完成后初始化
 window.onload = function () {
-    TG.init('canvas0');
-    TG.setCamera([0.2, 0.2, 2], [0, 0, 0]);
-    TG.update();
-    TG.drawLine([0, 0, 0], [1, 0, 0], [1, 0, 0]); // X 轴，红色
-    TG.drawLine([0, 0, 0], [0, 1, 0], [0, 1, 0]); // Y 轴，绿色
-    TG.drawLine([0, 0, 0], [0, 0, 1], [0, 0, 1]); // Z 轴，蓝色
+    var tg = TG.creatNew();
+    tg.init('canvas0');
+    tg.setCamera = aSetCamera;
+    tg.update();
+    tg.drawLine([0, 0, 0], [1, 0, 0], [1, 0, 0]); // X 轴，红色
+    tg.drawLine([0, 0, 0], [0, 1, 0], [0, 1, 0]); // Y 轴，绿色
+    tg.drawLine([0, 0, 0], [0, 0, 1], [0, 0, 1]); // Z 轴，蓝色
 };
