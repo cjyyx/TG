@@ -1,21 +1,20 @@
 const mat4 = glMatrix.mat4;
 const vec3 = glMatrix.vec3;
 
-const TG = {
-    gl: null,
-    shaderProgram: null,
-
-    buffers: {
-        position: null,
-        color: null,
-    },
-
-    creatNew: function () {
-        return Object.create(this);
-    },
-
-    init: function (canvasId) {
-        const canvas = document.getElementById(canvasId);
+class TG {
+    constructor() {
+        this.canvas = null;
+        this.gl = null;
+        this.shaderProgram = null;
+        this.vertexShaderSource = null;
+        this.fragmentShaderSource = null;
+        this.buffers = {
+            position: null,
+            color: null,
+        };
+    }
+    init(canvas) {
+        this.canvas = canvas;
         this.gl = canvas.getContext('webgl');
 
         if (!this.gl) {
@@ -25,8 +24,8 @@ const TG = {
 
         this.initShaders();
         this.initBuffers();
-    },
-    initShaders: function () {
+    }
+    initShaders() {
         // 顶点着色器代码
         this.vertexShaderSource = `
         attribute vec3 aPosition;
@@ -77,8 +76,8 @@ const TG = {
         this.shaderProgram.aColorLocation = this.gl.getAttribLocation(this.shaderProgram, 'aColor');
         this.shaderProgram.uModelViewMatrixLocation = this.gl.getUniformLocation(this.shaderProgram, 'uModelViewMatrix');
         this.shaderProgram.uProjectionMatrixLocation = this.gl.getUniformLocation(this.shaderProgram, 'uProjectionMatrix');
-    },
-    initBuffers: function () {
+    }
+    initBuffers() {
         // 顶点坐标数据
         const positionData = [
             // 线段的起点和终点坐标
@@ -106,10 +105,10 @@ const TG = {
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.color);
         this.gl.enableVertexAttribArray(this.shaderProgram.aColorLocation);
         this.gl.vertexAttribPointer(this.shaderProgram.aColorLocation, 3, this.gl.FLOAT, false, 0, 0);
-    },
+    }
 
     // 创建着色器函数
-    createShader: function (type, source) {
+    createShader(type, source) {
         const shader = this.gl.createShader(type);
         this.gl.shaderSource(shader, source);
         this.gl.compileShader(shader);
@@ -122,18 +121,18 @@ const TG = {
         }
 
         return shader;
-    },
+    }
 
     // 创建缓冲区函数
-    createBuffer: function (target, data) {
+    createBuffer(target, data) {
         const buffer = this.gl.createBuffer();
         this.gl.bindBuffer(target, buffer);
         this.gl.bufferData(target, data, this.gl.STATIC_DRAW);
         return buffer;
-    },
+    }
 
     /** 画直线 */
-    drawLine: function (startPoint, endPoint, color) {
+    drawLine(startPoint, endPoint, color) {
         // 更新顶点坐标数据和颜色数据
         const positionData = [
             startPoint[0], startPoint[1], startPoint[2],
@@ -156,21 +155,21 @@ const TG = {
 
         this.gl.drawArrays(this.gl.LINES, 0, 2);
 
-    },
+    }
 
     /** 设置相机参数，需自定义 */
-    setCamera: function (tg) {
-    },
+    setCamera() {
+    }
 
     /** 清空画布，更新参数 */
-    update: function () {
+    update() {
 
         // 清空画布
         this.gl.clearColor(0, 0, 0, 1);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 
         this.setCamera(this.gl, this.shaderProgram);
-    },
+    }
 };
 
 
