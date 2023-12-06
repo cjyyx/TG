@@ -12,6 +12,7 @@ class TG {
             position: null,
             color: null,
         };
+        this.object3DList = [];
     }
     init(canvas) {
         this.canvas = canvas;
@@ -131,60 +132,37 @@ class TG {
         return buffer;
     }
 
-    /** 画直线 */
-    drawLine(startPoint, endPoint, color) {
-        // 更新顶点坐标数据和颜色数据
-        const positionData = [
-            startPoint[0], startPoint[1], startPoint[2],
-            endPoint[0], endPoint[1], endPoint[2]
-        ];
-
-        const colorData = [
-            color[0], color[1], color[2],
-            color[0], color[1], color[2]
-        ];
-
-        // 更新顶点缓冲区和颜色缓冲区的数据
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.position);
-        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(positionData), this.gl.STATIC_DRAW);
-        this.gl.vertexAttribPointer(this.shaderProgram.aPositionLocation, 3, this.gl.FLOAT, false, 0, 0);
-
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.color);
-        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(colorData), this.gl.STATIC_DRAW);
-        this.gl.vertexAttribPointer(this.shaderProgram.aColorLocation, 3, this.gl.FLOAT, false, 0, 0);
-
-        this.gl.drawArrays(this.gl.LINES, 0, 2);
-
-    }
-
     /** 设置相机参数，需自定义 */
-    setCamera() {
+    camera(gl) {
+        var position = [0.2, 0.2, 1.5];
+        var lookAt = [0, 0, 0];
+
+        const modelViewMatrix = mat4.create();
+        mat4.lookAt(modelViewMatrix, position, lookAt, [0, 1, 0]);
+
+        const projectionMatrix = mat4.create();
+        mat4.perspective(projectionMatrix, 90 * Math.PI / 180, gl.canvas.width / gl.canvas.height, 0.1, 100);
+        return { modelViewMatrix, projectionMatrix };
     }
 
-    /** 清空画布，更新参数 */
-    update() {
+    addObject3D(object3D) {
+        this.object3DList.push(object3D);
+    }
 
+    rander() {
         // 清空画布
         this.gl.clearColor(0, 0, 0, 1);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 
-        this.setCamera(this.gl, this.shaderProgram);
+        // 设置相机参数
+        const { modelViewMatrix, projectionMatrix } = this.camera(this.gl);
+        this.gl.uniformMatrix4fv(this.shaderProgram.uModelViewMatrixLocation, false, modelViewMatrix);
+        this.gl.uniformMatrix4fv(this.shaderProgram.uProjectionMatrixLocation, false, projectionMatrix);
+
+        // 绘制所有 3D 对象
+        this.object3DList.forEach(object3D => {
+            object3D.display(this);
+        });
     }
 };
 
-
-function aSetCamera(gl, shaderProgram) {
-    var camera = {
-        position: [0.2, 0.2, 1.5],
-        lookAt: [0, 0, 0],
-    };
-    const modelViewMatrix = mat4.create();
-    mat4.lookAt(modelViewMatrix, camera.position, camera.lookAt, [0, 1, 0]);
-
-    const projectionMatrix = mat4.create();
-    mat4.perspective(projectionMatrix, 90 * Math.PI / 180, gl.canvas.width / gl.canvas.height, 0.1, 100);
-
-    // 传递相机参数到着色器程序中的 uniform 变量
-    gl.uniformMatrix4fv(shaderProgram.uModelViewMatrixLocation, false, modelViewMatrix);
-    gl.uniformMatrix4fv(shaderProgram.uProjectionMatrixLocation, false, projectionMatrix);
-};
