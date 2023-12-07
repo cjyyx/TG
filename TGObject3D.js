@@ -1,4 +1,16 @@
 const TGObject3D = {
+
+    Set: class {
+        constructor(obj3dList) {
+            this.obj3dList = obj3dList;
+        }
+        display(tg) {
+            this.obj3dList.forEach(obj3d => {
+                obj3d.display(tg);
+            });
+        }
+    },
+
     Line: class {
         constructor(startPoint, endPoint, color) {
             this.startPoint = startPoint;
@@ -6,9 +18,9 @@ const TGObject3D = {
             this.color = color;
         }
         display(tg) {
-           var startPoint = this.startPoint;
-           var endPoint = this.endPoint;
-           var color = this.color;
+            var startPoint = this.startPoint;
+            var endPoint = this.endPoint;
+            var color = this.color;
 
             // 更新顶点坐标数据和颜色数据
             const positionData = [
@@ -32,21 +44,18 @@ const TGObject3D = {
 
             tg.gl.drawArrays(tg.gl.LINES, 0, 2);
         }
-        
-        /** 绕指定轴旋转 */
-        rotate(axis, angle) {
-            // TODO
-            // const startPoint = this.startPoint;
-            // const endPoint = this.endPoint;
-
-            // const rotateMatrix = mat4.create();
-            // mat4.fromRotation(rotateMatrix, angle, axis);
-
-            // vec3.transformMat4(startPoint, startPoint, rotateMatrix);
-            // vec3.transformMat4(endPoint, endPoint, rotateMatrix);
-            
-            // this.startPoint = startPoint;
-            // this.endPoint = endPoint;
+    },
+    XYZ: class {
+        constructor(Opoint) {
+            this.Opoint = Opoint;
+            this.x = new TGObject3D.Line(Opoint, [1, 0, 0], [1, 0, 0]);
+            this.y = new TGObject3D.Line(Opoint, [0, 1, 0], [0, 1, 0]);
+            this.z = new TGObject3D.Line(Opoint, [0, 0, 1], [0, 0, 1]);
+            this.obj3dList = [this.x, this.y, this.z];
+            this.set = new TGObject3D.Set(this.obj3dList);
         }
-    }
+        display(tg) {
+            this.set.display(tg);
+        }
+    },
 };
