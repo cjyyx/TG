@@ -43,7 +43,6 @@ const TGCamera = {
             var cameraPositionZoomed = vec3.create();
             vec3.scale(cameraPositionZoomed, cameraPosition, cameraZoom);
             mat4.lookAt(modelViewMatrix, cameraPositionZoomed, targetPosition, [0, 1, 0]);
-            // mat4.lookAt(modelViewMatrix, cameraPosition, targetPosition, [0, 1, 0]);
 
             const projectionMatrix = mat4.create();
             mat4.perspective(projectionMatrix, 90 * Math.PI / 180, gl.canvas.width / gl.canvas.height, 0.1, 100);

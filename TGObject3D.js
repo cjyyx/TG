@@ -9,6 +9,11 @@ const TGObject3D = {
                 obj3d.display(tg);
             });
         }
+        apply(mat) {
+            this.obj3dList.forEach(obj3d => {
+                obj3d.apply(mat);
+            });
+        }
     },
 
     Line: class {
@@ -46,6 +51,14 @@ const TGObject3D = {
 
             gl.drawArrays(gl.LINES, 0, 2);
         }
+        apply(mat) {
+            var point = vec3.fromValues(this.startPoint[0],this.startPoint[1],this.startPoint[2]);
+            vec3.transformMat4(point, point, mat);
+            this.startPoint = [point[0],point[1],point[2]];
+            point = vec3.fromValues(this.endPoint[0],this.endPoint[1],this.endPoint[2]);
+            vec3.transformMat4(point, point, mat);
+            this.endPoint = [point[0],point[1],point[2]];
+        }
     },
     XYZ: class {
         constructor(tg, Opoint) {
@@ -58,6 +71,9 @@ const TGObject3D = {
         }
         display(tg) {
             this.set.display(tg);
+        }
+        apply(mat) {    
+            this.set.apply(mat);
         }
     },
 
@@ -103,6 +119,18 @@ const TGObject3D = {
             gl.vertexAttribPointer(shaderProgram.aColorLocation, this.triangleVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
             gl.drawArrays(gl.TRIANGLES, 0, this.triangleVertexPositionBuffer.numItems);
+        }
+        apply(mat) {
+            var vertices = [];
+            var point = vec3.create();
+            for (var i = 0; i < this.vertices.length; i += 3) {
+                point = vec3.fromValues(this.vertices[i], this.vertices[i + 1], this.vertices[i + 2]);
+                vec3.transformMat4(point, point, mat);
+                vertices.push(point[0]);
+                vertices.push(point[1]);
+                vertices.push(point[2]);
+            }
+            this.vertices = vertices;
         }
     },
 };

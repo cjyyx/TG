@@ -4,11 +4,22 @@ const vec3 = glMatrix.vec3;
 const canvas = document.getElementById("canvas0");
 
 var tg = new TG();
+var triangle;
 
 var loopCount = 0;
 function loop() {
     requestAnimationFrame(loop);
     loopCount++;
+
+
+
+    var mat = mat4.create();
+    // mat4.rotateY(mat, mat, 0.1);
+    // mat4.translate(mat, mat, [0.005, 0, 0]);
+    mat4.scale(mat, mat, [1.001, 1.001, 1.001]);
+
+    triangle.apply(mat);
+
     tg.rander();
     // console.log(loopCount);
 }
@@ -29,8 +40,7 @@ window.onload = function () {
         0.0, 1.0, 0.0,
         0.0, 0.0, 1.0,
     ];
-
-    var triangle = new TGObject3D.Triangle(tg, vertices, colors);
+    triangle = new TGObject3D.Triangle(tg, vertices, colors);
     tg.addObject3D(triangle);
 
     loop();
