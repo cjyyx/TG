@@ -12,50 +12,97 @@ const TGObject3D = {
     },
 
     Line: class {
-        constructor(startPoint, endPoint, color) {
+        constructor(tg, startPoint, endPoint, color) {
+            var gl = tg.gl;
             this.startPoint = startPoint;
             this.endPoint = endPoint;
             this.color = color;
-        }
-        display(tg) {
-            var startPoint = this.startPoint;
-            var endPoint = this.endPoint;
-            var color = this.color;
 
-            // 更新顶点坐标数据和颜色数据
-            const positionData = [
+            this.positionData = [
                 startPoint[0], startPoint[1], startPoint[2],
                 endPoint[0], endPoint[1], endPoint[2]
             ];
+            this.positionBuffer = gl.createBuffer();
 
-            const colorData = [
+            this.colorData = [
                 color[0], color[1], color[2],
                 color[0], color[1], color[2]
             ];
+            this.colorBuffer = gl.createBuffer();
+
+        }
+        display(tg) {
+            var gl = tg.gl;
+            var shaderProgram = tg.shaderProgram;
 
             // 更新顶点缓冲区和颜色缓冲区的数据
-            tg.gl.bindBuffer(tg.gl.ARRAY_BUFFER, tg.buffers.position);
-            tg.gl.bufferData(tg.gl.ARRAY_BUFFER, new Float32Array(positionData), tg.gl.STATIC_DRAW);
-            tg.gl.vertexAttribPointer(tg.shaderProgram.aPositionLocation, 3, tg.gl.FLOAT, false, 0, 0);
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.positionData), gl.STATIC_DRAW);
+            gl.vertexAttribPointer(shaderProgram.aPositionLocation, 3, gl.FLOAT, false, 0, 0);
 
-            tg.gl.bindBuffer(tg.gl.ARRAY_BUFFER, tg.buffers.color);
-            tg.gl.bufferData(tg.gl.ARRAY_BUFFER, new Float32Array(colorData), tg.gl.STATIC_DRAW);
-            tg.gl.vertexAttribPointer(tg.shaderProgram.aColorLocation, 3, tg.gl.FLOAT, false, 0, 0);
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.colorData), gl.STATIC_DRAW);
+            gl.vertexAttribPointer(shaderProgram.aColorLocation, 3, gl.FLOAT, false, 0, 0);
 
-            tg.gl.drawArrays(tg.gl.LINES, 0, 2);
+            gl.drawArrays(gl.LINES, 0, 2);
         }
     },
     XYZ: class {
-        constructor(Opoint) {
+        constructor(tg, Opoint) {
             this.Opoint = Opoint;
-            this.x = new TGObject3D.Line(Opoint, [1, 0, 0], [1, 0, 0]);
-            this.y = new TGObject3D.Line(Opoint, [0, 1, 0], [0, 1, 0]);
-            this.z = new TGObject3D.Line(Opoint, [0, 0, 1], [0, 0, 1]);
+            this.x = new TGObject3D.Line(tg, Opoint, [1, 0, 0], [1, 0, 0]);
+            this.y = new TGObject3D.Line(tg, Opoint, [0, 1, 0], [0, 1, 0]);
+            this.z = new TGObject3D.Line(tg, Opoint, [0, 0, 1], [0, 0, 1]);
             this.obj3dList = [this.x, this.y, this.z];
             this.set = new TGObject3D.Set(this.obj3dList);
         }
         display(tg) {
             this.set.display(tg);
+        }
+    },
+
+    Triangle: class {
+        /**
+        例如 \
+        var vertices = [
+            0.0, 0.0, 0.0,
+            0.7, 0.3, 0.0,
+            -0.6, 0.3, 0.4
+        ];
+        var colors = [
+            1.0, 0.0, 0.0,
+            0.0, 1.0, 0.0,
+            0.0, 0.0, 1.0,
+        ];
+        */
+        constructor(tg, vertices, colors) {
+            this.tg = tg;
+            var gl = this.tg.gl;
+
+            this.vertices = vertices;
+            this.colors = colors;
+
+            this.triangleVertexPositionBuffer = gl.createBuffer();
+            this.triangleVertexPositionBuffer.itemSize = 3;
+            this.triangleVertexPositionBuffer.numItems = 3;
+
+            this.triangleVertexColorBuffer = gl.createBuffer();
+            this.triangleVertexColorBuffer.itemSize = 3;
+            this.triangleVertexColorBuffer.numItems = 3;
+        }
+        display(tg) {
+            var gl = tg.gl;
+            var shaderProgram = tg.shaderProgram;
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.triangleVertexPositionBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW);
+            gl.vertexAttribPointer(shaderProgram.aPositionLocation, this.triangleVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.triangleVertexColorBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.colors), gl.STATIC_DRAW);
+            gl.vertexAttribPointer(shaderProgram.aColorLocation, this.triangleVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+            gl.drawArrays(gl.TRIANGLES, 0, this.triangleVertexPositionBuffer.numItems);
         }
     },
 };
