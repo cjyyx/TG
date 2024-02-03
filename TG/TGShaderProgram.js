@@ -296,7 +296,7 @@ function ColorLightShaderProgram(tg) {
         uniform vec3 uLightColor;
         
         void main() {
-            float uShininess = 2.33;
+            float uShininess = 1.33;
             vec3 norm = normalize(vNormal);
             vec3 viewDir = normalize(vViewRay);
             vec3 reflectDir = reflect(vLightRay, norm);  
@@ -310,7 +310,7 @@ function ColorLightShaderProgram(tg) {
             vec3 diffuse = diff * uLightColor;
         
             // 镜面高光
-            float specularStrength = 0.9;
+            float specularStrength = 0.99;
             float spec = pow(max(dot(viewDir, reflectDir), 0.0), uShininess);
             vec3 specular = specularStrength * spec * uLightColor;
         
@@ -833,3 +833,4 @@ export {
     TextureMaterialShaderProgram, TextureShaderProgram,
     TextureShaderProgram2D
 };
+
